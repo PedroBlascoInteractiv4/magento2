@@ -5,9 +5,17 @@
  */
 namespace Magento\Wishlist\Controller\Index;
 
-use Magento\Framework\App\Action;
 use Magento\Catalog\Model\Product\Exception as ProductException;
+use Magento\Framework\App\Action;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Data\Form\FormKey\Validator;
+use Magento\Framework\Escaper;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Wishlist\Controller\WishlistProviderInterface;
+use Magento\Wishlist\Helper\Data;
+use Magento\Wishlist\Model\Item\OptionFactory;
+use Magento\Wishlist\Model\ItemFactory;
+use Magento\Wishlist\Model\LocaleQuantityProcessor;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -15,17 +23,17 @@ use Magento\Framework\Controller\ResultFactory;
 class Cart extends \Magento\Wishlist\Controller\AbstractIndex
 {
     /**
-     * @var \Magento\Wishlist\Controller\WishlistProviderInterface
+     * @var WishlistProviderInterface
      */
     protected $wishlistProvider;
 
     /**
-     * @var \Magento\Wishlist\Model\LocaleQuantityProcessor
+     * @var LocaleQuantityProcessor
      */
     protected $quantityProcessor;
 
     /**
-     * @var \Magento\Wishlist\Model\ItemFactory
+     * @var ItemFactory
      */
     protected $itemFactory;
 
@@ -40,7 +48,7 @@ class Cart extends \Magento\Wishlist\Controller\AbstractIndex
     protected $cartHelper;
 
     /**
-     * @var \Magento\Wishlist\Model\Item\OptionFactory
+     * @var OptionFactory
      */
     private $optionFactory;
 
@@ -50,46 +58,46 @@ class Cart extends \Magento\Wishlist\Controller\AbstractIndex
     protected $productHelper;
 
     /**
-     * @var \Magento\Framework\Escaper
+     * @var Escaper
      */
     protected $escaper;
 
     /**
-     * @var \Magento\Wishlist\Helper\Data
+     * @var Data
      */
     protected $helper;
 
     /**
-     * @var \Magento\Framework\Data\Form\FormKey\Validator
+     * @var Validator
      */
     protected $formKeyValidator;
 
     /**
      * @param Action\Context $context
-     * @param \Magento\Wishlist\Controller\WishlistProviderInterface $wishlistProvider
-     * @param \Magento\Wishlist\Model\LocaleQuantityProcessor $quantityProcessor
-     * @param \Magento\Wishlist\Model\ItemFactory $itemFactory
+     * @param WishlistProviderInterface $wishlistProvider
+     * @param LocaleQuantityProcessor $quantityProcessor
+     * @param ItemFactory $itemFactory
      * @param \Magento\Checkout\Model\Cart $cart
-     * @param \Magento\Wishlist\Model\Item\OptionFactory $optionFactory
+     * @param OptionFactory $optionFactory
      * @param \Magento\Catalog\Helper\Product $productHelper
-     * @param \Magento\Framework\Escaper $escaper
-     * @param \Magento\Wishlist\Helper\Data $helper
+     * @param Escaper $escaper
+     * @param Data $helper
      * @param \Magento\Checkout\Helper\Cart $cartHelper
-     * @param \Magento\Framework\Data\Form\FormKey\Validator $formKeyValidator
+     * @param Validator $formKeyValidator
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Action\Context $context,
-        \Magento\Wishlist\Controller\WishlistProviderInterface $wishlistProvider,
-        \Magento\Wishlist\Model\LocaleQuantityProcessor $quantityProcessor,
-        \Magento\Wishlist\Model\ItemFactory $itemFactory,
+        WishlistProviderInterface $wishlistProvider,
+        LocaleQuantityProcessor $quantityProcessor,
+        ItemFactory $itemFactory,
         \Magento\Checkout\Model\Cart $cart,
-        \Magento\Wishlist\Model\Item\OptionFactory $optionFactory,
+        OptionFactory $optionFactory,
         \Magento\Catalog\Helper\Product $productHelper,
-        \Magento\Framework\Escaper $escaper,
-        \Magento\Wishlist\Helper\Data $helper,
+        Escaper $escaper,
+        Data $helper,
         \Magento\Checkout\Helper\Cart $cartHelper,
-        \Magento\Framework\Data\Form\FormKey\Validator $formKeyValidator
+        Validator $formKeyValidator
     ) {
         $this->wishlistProvider = $wishlistProvider;
         $this->quantityProcessor = $quantityProcessor;
@@ -137,7 +145,8 @@ class Cart extends \Magento\Wishlist\Controller\AbstractIndex
         }
 
         // Set qty
-        $qty = $this->getRequest()->getParam('qty');
+        $qty = $this->getRequest()->getPost('qty') ? $this->getRequest()->getPost('qty') :
+            $this->getRequest()->getParam('qty');
         $postQty = $this->getRequest()->getPostValue('qty');
         if ($postQty !== null && $qty !== $postQty) {
             $qty = $postQty;
@@ -196,7 +205,7 @@ class Cart extends \Magento\Wishlist\Controller\AbstractIndex
             }
         } catch (ProductException $e) {
             $this->messageManager->addError(__('This product(s) is out of stock.'));
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->messageManager->addNotice($e->getMessage());
             $redirectUrl = $configureUrl;
         } catch (\Exception $e) {
@@ -211,7 +220,7 @@ class Cart extends \Magento\Wishlist\Controller\AbstractIndex
             $resultJson->setData(['backUrl' => $redirectUrl]);
             return $resultJson;
         }
-        
+
         $resultRedirect->setUrl($redirectUrl);
         return $resultRedirect;
     }
