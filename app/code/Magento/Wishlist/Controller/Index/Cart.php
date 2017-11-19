@@ -12,7 +12,6 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Magento\Framework\Escaper;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Wishlist\Controller\AbstractIndex;
 use Magento\Wishlist\Controller\WishlistProviderInterface;
 use Magento\Wishlist\Helper\Data;
@@ -226,9 +225,7 @@ class Cart extends AbstractIndex
     public function getMinimalQty($item)
     {
         $stockItem = $this->_objectManager->get('\Magento\CatalogInventory\Api\StockRegistryInterface');
-        $storeManager = $this->_objectManager->get(StoreManagerInterface::class);
-        $store = $storeManager->getStore($item->getStoreId());
-        $stockItem = $stockItem->getStockItem($item->getProductId(), $store);
+        $stockItem = $stockItem->getStockItem($item->getProductId(), $item->getProduct()->getStore());
         $minSaleQty = $stockItem->getMinSaleQty();
         return $minSaleQty > 0 ? $minSaleQty : 1;
     }
