@@ -146,10 +146,6 @@ class Cart extends AbstractIndex
         }
         // Set qty
         $qty = $this->getRequest()->getParam('qty');
-        $postQty = $this->getRequest()->getPostValue('qty');
-        if ($postQty !== null && $qty !== $postQty) {
-            $qty = $postQty;
-        }
         if (!$qty) {
             $qty = $this->getMinimalQty($item);
         }
