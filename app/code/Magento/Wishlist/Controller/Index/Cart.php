@@ -7,6 +7,7 @@ namespace Magento\Wishlist\Controller\Index;
 
 use Magento\Catalog\Helper\Product;
 use Magento\Catalog\Model\Product\Exception as ProductException;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Action;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Data\Form\FormKey\Validator;
@@ -145,6 +146,10 @@ class Cart extends AbstractIndex
         }
         // Set qty
         $qty = $this->getRequest()->getParam('qty');
+        $postQty = $this->getRequest()->getPostValue('qty');
+        if ($postQty !== null && $qty !== $postQty) {
+            $qty = $postQty;
+        }
         if (!$qty) {
             $qty = $this->getMinimalQty($item);
         }
@@ -217,14 +222,14 @@ class Cart extends AbstractIndex
     }
 
     /**
-     * Gets minimal sales quantity
+     * Gets minimal sales quantitysphp 70
      *
      * @param \Magento\Wishlist\Model\Item $item
      * @return int|null
      */
     public function getMinimalQty($item)
     {
-        $stockItem = $this->_objectManager->get('\Magento\CatalogInventory\Api\StockRegistryInterface');
+        $stockItem = $this->_objectManager->get(StockRegistryInterface::class);
         $stockItem = $stockItem->getStockItem($item->getProductId(), $item->getProduct()->getStore());
         $minSaleQty = $stockItem->getMinSaleQty();
         return $minSaleQty > 0 ? $minSaleQty : 1;

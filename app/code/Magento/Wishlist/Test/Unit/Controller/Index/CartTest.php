@@ -5,9 +5,9 @@
  */
 namespace Magento\Wishlist\Test\Unit\Controller\Index;
 
-use Magento\Wishlist\Controller\Index\Cart;
 use Magento\Catalog\Model\Product\Exception as ProductException;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Wishlist\Controller\Index\Cart;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyFields)
@@ -158,7 +158,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $this->requestMock = $this->getMockBuilder('Magento\Framework\App\RequestInterface')
             ->disableOriginalConstructor()
-            ->setMethods(['getParams', 'getParam', 'isAjax'])
+            ->setMethods(['getParams', 'getParam', 'isAjax', 'getPostValue'])
             ->getMockForAbstractClass();
 
         $this->redirectMock = $this->getMockBuilder('Magento\Framework\App\Response\RedirectInterface')
@@ -168,6 +168,10 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->objectManagerMock = $this->getMockBuilder('Magento\Framework\ObjectManagerInterface')
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
+        $this->objectManagerMock
+            ->expects($this->any())
+            ->method('get')
+            ->willReturn($this->helperMock);
 
         $this->messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
@@ -566,7 +570,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $this->messageManagerMock->expects($this->once())
             ->method('addSuccess')
-            ->with('You added '  . $productName . ' to your shopping cart.', null)
+            ->with('You added ' . $productName . ' to your shopping cart.', null)
             ->willReturnSelf();
 
         $this->cartHelperMock->expects($this->once())
@@ -580,7 +584,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->helperMock->expects($this->once())
             ->method('calculate')
             ->willReturnSelf();
-        
+
         return $refererUrl;
     }
 

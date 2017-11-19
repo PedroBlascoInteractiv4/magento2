@@ -6,25 +6,28 @@
 namespace Magento\Wishlist\Controller\Index;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\NotFoundException;
+use Magento\Wishlist\Controller\AbstractIndex;
+use Magento\Wishlist\Controller\WishlistProviderInterface;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Add extends \Magento\Wishlist\Controller\AbstractIndex
+class Add extends AbstractIndex
 {
     /**
-     * @var \Magento\Wishlist\Controller\WishlistProviderInterface
+     * @var WishlistProviderInterface
      */
     protected $wishlistProvider;
 
     /**
-     * @var \Magento\Customer\Model\Session
+     * @var Session
      */
     protected $_customerSession;
 
@@ -40,15 +43,15 @@ class Add extends \Magento\Wishlist\Controller\AbstractIndex
 
     /**
      * @param Action\Context $context
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Wishlist\Controller\WishlistProviderInterface $wishlistProvider
+     * @param Session $customerSession
+     * @param WishlistProviderInterface $wishlistProvider
      * @param ProductRepositoryInterface $productRepository
      * @param Validator $formKeyValidator
      */
     public function __construct(
         Action\Context $context,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Wishlist\Controller\WishlistProviderInterface $wishlistProvider,
+        Session $customerSession,
+        WishlistProviderInterface $wishlistProvider,
         ProductRepositoryInterface $productRepository,
         Validator $formKeyValidator
     ) {
