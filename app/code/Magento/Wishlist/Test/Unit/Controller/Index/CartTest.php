@@ -165,13 +165,20 @@ class CartTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
+        $this->stockRegistry = $this->getMock(
+            'Magento\CatalogInventory\Model\StockRegistry',
+            [],
+            [],
+            '',
+            false
+        );
         $this->objectManagerMock = $this->getMockBuilder('Magento\Framework\ObjectManagerInterface')
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
-        $this->objectManagerMock
-            ->expects($this->any())
+        $this->objectManagerMock->expects($this->any())
             ->method('get')
-            ->willReturn($this->helperMock);
+            ->with('Magento\CatalogInventory\Api\StockRegistryInterface')
+            ->willReturn($this->stockRegistry);
 
         $this->messageManagerMock = $this->getMockBuilder('Magento\Framework\Message\ManagerInterface')
             ->disableOriginalConstructor()
