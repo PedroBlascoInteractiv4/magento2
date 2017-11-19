@@ -233,8 +233,8 @@ class Cart extends AbstractIndex
     public function getMinimalQty($item)
     {
         $stockItem = $this->_objectManager->get('\Magento\CatalogInventory\Api\StockRegistryInterface');
-        $storeManager = $this->_objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-        $store = $storeManager->getStore($item->getStoreId());
+        $storeManager = $this->_objectManager->get('\Magento\Store\Api\StoreRepositoryInterface');
+        $store = $storeManager->getById($item->getStoreId());
         $stockItem = $stockItem->getStockItem($item->getProductId(), $store);
         $minSaleQty = $stockItem->getMinSaleQty();
         return $minSaleQty > 0 ? $minSaleQty : 1;
