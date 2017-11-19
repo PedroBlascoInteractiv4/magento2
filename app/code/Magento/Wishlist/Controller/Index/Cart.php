@@ -12,6 +12,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Magento\Framework\Escaper;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\Wishlist\Controller\AbstractIndex;
 use Magento\Wishlist\Controller\WishlistProviderInterface;
 use Magento\Wishlist\Helper\Data;
@@ -131,7 +132,6 @@ class Cart extends AbstractIndex
         if (!$this->formKeyValidator->validate($this->getRequest())) {
             return $resultRedirect->setPath('*/*/');
         }
-
         $itemId = (int)$this->getRequest()->getParam('item');
         /* @var $item \Magento\Wishlist\Model\Item */
         $item = $this->itemFactory->create()->load($itemId);
@@ -144,9 +144,12 @@ class Cart extends AbstractIndex
             $resultRedirect->setPath('*/*');
             return $resultRedirect;
         }
-
         // Set qty
         $qty = $this->getRequest()->getParam('qty');
+        $postQty = $this->getRequest()->getPostValue('qty');
+        if ($postQty !== null && $qty !== $postQty) {
+            $qty = $postQty;
+        }
         if (!$qty) {
             $qty = $this->getMinimalQty($item);
         }
@@ -161,7 +164,6 @@ class Cart extends AbstractIndex
         if ($qty) {
             $item->setQty($qty);
         }
-
         $redirectUrl = $this->_url->getUrl('*/*');
         $configureUrl = $this->_url->getUrl(
             '*/*/configure/',
@@ -170,7 +172,6 @@ class Cart extends AbstractIndex
                 'product_id' => $item->getProductId(),
             ]
         );
-
         try {
             /** @var \Magento\Wishlist\Model\ResourceModel\Item\Option\Collection $options */
             $options = $this->optionFactory->create()->getCollection()->addItemFilter([$itemId]);
@@ -185,7 +186,6 @@ class Cart extends AbstractIndex
             $item->addToCart($this->cart, true);
             $this->cart->save()->getQuote()->collectTotals();
             $wishlist->save();
-
             if (!$this->cart->getQuote()->getHasError()) {
                 $message = __(
                     'You added %1 to your shopping cart.',
@@ -210,16 +210,13 @@ class Cart extends AbstractIndex
         } catch (\Exception $e) {
             $this->messageManager->addException($e, __('We can\'t add the item to the cart right now.'));
         }
-
         $this->helper->calculate();
-
         if ($this->getRequest()->isAjax()) {
             /** @var \Magento\Framework\Controller\Result\Json $resultJson */
             $resultJson = $this->resultFactory->create(ResultFactory::TYPE_JSON);
             $resultJson->setData(['backUrl' => $redirectUrl]);
             return $resultJson;
         }
-
         $resultRedirect->setUrl($redirectUrl);
         return $resultRedirect;
     }
@@ -233,8 +230,8 @@ class Cart extends AbstractIndex
     public function getMinimalQty($item)
     {
         $stockItem = $this->_objectManager->get('\Magento\CatalogInventory\Api\StockRegistryInterface');
-        $storeManager = $this->_objectManager->get('\Magento\Store\Api\StoreRepositoryInterface');
-        $store = $storeManager->getById($item->getStoreId());
+        $storeManager = $this->_objectManager->get(StoreManagerInterface::class);
+        $store = $storeManager->getStore($item->getStoreId());
         $stockItem = $stockItem->getStockItem($item->getProductId(), $store);
         $minSaleQty = $stockItem->getMinSaleQty();
         return $minSaleQty > 0 ? $minSaleQty : 1;
