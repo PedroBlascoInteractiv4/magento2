@@ -684,6 +684,14 @@ class CartTest extends \PHPUnit_Framework_TestCase
             ->method('getProductId')
             ->willReturn($productId);
 
+        $productMock = $this->getMockBuilder('Magento\Catalog\Model\Product')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $itemMock->expects($this->once())
+            ->method('getProduct')
+            ->willReturn($productMock);
+
         $this->urlMock->expects($this->at(1))
             ->method('getUrl')
             ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $productId])
@@ -849,6 +857,14 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $itemMock->expects($this->once())
             ->method('getProductId')
             ->willReturn($productId);
+
+        $productMock = $this->getMockBuilder('Magento\Catalog\Model\Product')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $itemMock->expects($this->once())
+            ->method('getProduct')
+            ->willReturn($productMock);
 
         $this->urlMock->expects($this->at(1))
             ->method('getUrl')

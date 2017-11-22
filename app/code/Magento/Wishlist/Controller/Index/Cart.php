@@ -151,7 +151,7 @@ class Cart extends AbstractIndex
             $qty = $postQty;
         }
         if (!$qty) {
-            $qty = $this->getMinimalQty($item);
+            $qty = $this->getQty($item);
         }
         if (is_array($qty)) {
             if (isset($qty[$itemId])) {
@@ -227,11 +227,23 @@ class Cart extends AbstractIndex
      * @param \Magento\Wishlist\Model\Item $item
      * @return int|null
      */
-    public function getMinimalQty($item)
+    public function getQty($item)
     {
         $stockItem = $this->_objectManager->get(StockRegistryInterface::class);
         $stockItem = $stockItem->getStockItem($item->getProductId(), $item->getProduct()->getStore());
         $minSaleQty = $stockItem->getMinSaleQty();
-        return $minSaleQty > 0 ? $minSaleQty : 1;
+        $qty = 1;
+        if ($minSaleQty && $item->getQty()) {
+            if ($minSaleQty > $item->getQty()) {
+                $qty = $minSaleQty;
+            } else {
+                $qty = $item->getQty();
+            }
+        } elseif ($minSaleQty) {
+            $qty = $minSaleQty;
+        } elseif ($item->getQty()) {
+            $qty = $item->getQty();
+        }
+        return $qty;
     }
 }
