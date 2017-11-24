@@ -187,6 +187,13 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->storeMock = $this->getMockBuilder(Store::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $this->productMock = $this->getMock(
+            '\Magento\Catalog\Model\Product',
+            ['getStore'],
+            [],
+            '',
+            false
+        );
 
         $this->productMock->expects($this->any())
             ->method('getStore')
@@ -265,8 +272,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
             ->method('set')
             ->with('4/product/stock_data/min_qty_allowed_in_shopping_cart')
             ->willReturnArgument($this->saleQty);
-
-        $this->stockItemMock->expects($this->once())->method('getMinSaleQty')->willReturn($this->saleQty);
 
         $this->model = new Cart(
             $this->contextMock,
