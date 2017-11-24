@@ -268,11 +268,6 @@ class CartTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->arrayManagerMock->expects($this->once())
-            ->method('set')
-            ->with('4/product/stock_data/min_qty_allowed_in_shopping_cart')
-            ->willReturnArgument($this->saleQty);
-
         $this->model = new Cart(
             $this->contextMock,
             $this->wishlistProviderMock,
