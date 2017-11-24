@@ -116,6 +116,20 @@ class CartTest extends \PHPUnit_Framework_TestCase
     protected $formKeyValidator;
 
     /**
+     * @var Store|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $storeMock;
+
+    /**
+     * @var ProductInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $productMock;
+
+    protected $productId = 4;
+
+    protected $minSaleQty = 10;
+
+    /**
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function setUp()
@@ -165,13 +179,24 @@ class CartTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
-        $this->stockRegistry = $this->getMock(
-            'Magento\CatalogInventory\Model\StockRegistry',
-            [],
-            [],
-            '',
-            false
+        $this->stockRegistry = $this->getMockForAbstractClass(
+            'Magento\CatalogInventory\Api\StockRegistryInterface',
+            ['getMinSaleQty']
         );
+
+        $this->storeMock = $this->getMockBuilder(Store::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->productMock->expects($this->any())
+            ->method('getStore')
+            ->willReturn($this->storeMock);
+        $this->productMock->expects($this->any())->method('getId')->willReturn($this->productId1);
+
+        $this->stockRegistry->expects($this->once())
+            ->method('getMinSaleQty')
+            ->with($this->productId, $this->storeMock)
+            ->will($this->returnValue($this->minSaleQty));
         $this->objectManagerMock = $this->getMockBuilder('Magento\Framework\ObjectManagerInterface')
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
@@ -235,6 +260,13 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->formKeyValidator = $this->getMockBuilder('Magento\Framework\Data\Form\FormKey\Validator')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->arrayManagerMock->expects($this->once())
+            ->method('set')
+            ->with('4/product/stock_data/min_qty_allowed_in_shopping_cart')
+            ->willReturnArgument($this->saleQty);
+
+        $this->stockItemMock->expects($this->once())->method('getMinSaleQty')->willReturn($this->saleQty);
 
         $this->model = new Cart(
             $this->contextMock,
@@ -392,7 +424,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $itemId = 2;
         $wishlistId = 1;
         $qty = [$itemId => 3];
-        $productId = 4;
+
         $productName = 'product_name';
         $indexUrl = 'index_url';
         $configureUrl = 'configure_url';
@@ -468,11 +500,11 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $itemMock->expects($this->once())
             ->method('getProductId')
-            ->willReturn($productId);
+            ->willReturn($this->productId);
 
         $this->urlMock->expects($this->at(1))
             ->method('getUrl')
-            ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $productId])
+            ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $$this->productId])
             ->willReturn($configureUrl);
 
         $optionMock = $this->getMockBuilder('Magento\Wishlist\Model\Item\Option')
@@ -558,17 +590,9 @@ class CartTest extends \PHPUnit_Framework_TestCase
             ->method('getHasError')
             ->willReturn(false);
 
-        $productMock = $this->getMockBuilder('Magento\Catalog\Model\Product')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $itemMock->expects($this->once())
             ->method('getProduct')
-            ->willReturn($productMock);
-
-        $productMock->expects($this->once())
-            ->method('getName')
-            ->willReturn($productName);
+            ->willReturn($this->productMock);
 
         $this->escaperMock->expects($this->once())
             ->method('escapeHtml')
@@ -603,7 +627,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $itemId = 2;
         $wishlistId = 1;
         $qty = [];
-        $productId = 4;
+
         $indexUrl = 'index_url';
         $configureUrl = 'configure_url';
         $options = [5 => 'option'];
@@ -682,19 +706,15 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $itemMock->expects($this->once())
             ->method('getProductId')
-            ->willReturn($productId);
-
-        $productMock = $this->getMockBuilder('Magento\Catalog\Model\Product')
-            ->disableOriginalConstructor()
-            ->getMock();
+            ->willReturn($this->productId);
 
         $itemMock->expects($this->once())
             ->method('getProduct')
-            ->willReturn($productMock);
+            ->willReturn($this->productMock);
 
         $this->urlMock->expects($this->at(1))
             ->method('getUrl')
-            ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $productId])
+            ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $this->productId])
             ->willReturn($configureUrl);
 
         $optionMock = $this->getMockBuilder('Magento\Wishlist\Model\Item\Option')
@@ -777,7 +797,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $itemId = 2;
         $wishlistId = 1;
         $qty = [];
-        $productId = 4;
+
         $indexUrl = 'index_url';
         $configureUrl = 'configure_url';
         $options = [5 => 'option'];
@@ -856,7 +876,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $itemMock->expects($this->once())
             ->method('getProductId')
-            ->willReturn($productId);
+            ->willReturn($this->productId);
 
         $productMock = $this->getMockBuilder('Magento\Catalog\Model\Product')
             ->disableOriginalConstructor()
@@ -868,7 +888,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $this->urlMock->expects($this->at(1))
             ->method('getUrl')
-            ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $productId])
+            ->with('*/*/configure/', ['id' => $itemId, 'product_id' => $this->productId])
             ->willReturn($configureUrl);
 
         $optionMock = $this->getMockBuilder('Magento\Wishlist\Model\Item\Option')
