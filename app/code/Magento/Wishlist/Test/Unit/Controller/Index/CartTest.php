@@ -180,7 +180,7 @@ class CartTest extends \PHPUnit_Framework_TestCase
 
         $this->stockRegistry = $this->getMockForAbstractClass(
             'Magento\CatalogInventory\Api\StockRegistryInterface',
-            ['getMinSaleQty']
+            ['getStockItem', 'getMinSaleQty']
         );
 
         $this->storeMock = $this->getMockBuilder(Store::class)
@@ -200,13 +200,15 @@ class CartTest extends \PHPUnit_Framework_TestCase
         $this->productMock->expects($this->any())->method('getId')->willReturn($productId);
 
         $this->stockRegistry->expects($this->once())
-            ->method('getMinSaleQty')
+            ->method('getStockItem')
             ->with($productId, $this->storeMock)
-            ->will($this->returnValue($minSaleQty));
+            ->willReturn($this->stockRegistry);
+        $this->stockRegistry->expects($this->any())->method('getMinSaleQty')->willReturn($minSaleQty);
 
         $this->objectManagerMock = $this->getMockBuilder('Magento\Framework\ObjectManagerInterface')
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
+
         $this->objectManagerMock->expects($this->any())
             ->method('get')
             ->with('Magento\CatalogInventory\Api\StockRegistryInterface')
