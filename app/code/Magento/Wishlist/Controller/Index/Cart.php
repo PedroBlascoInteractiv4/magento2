@@ -233,16 +233,20 @@ class Cart extends AbstractIndex
         $stockItem = $stockItem->getStockItem($item->getProductId(), $item->getProduct()->getStore());
         $minSaleQty = $stockItem->getMinSaleQty();
         $qty = 1;
-        if ($minSaleQty && $item->getQty()) {
-            if ($minSaleQty > $item->getQty()) {
+        try {
+            if ($minSaleQty && $item->getQty()) {
+                if ($minSaleQty > $item->getQty()) {
+                    $qty = $minSaleQty;
+                } else {
+                    $qty = $item->getQty();
+                }
+            } elseif ($minSaleQty) {
                 $qty = $minSaleQty;
-            } else {
+            } elseif ($item->getQty()) {
                 $qty = $item->getQty();
             }
-        } elseif ($minSaleQty) {
-            $qty = $minSaleQty;
-        } elseif ($item->getQty()) {
-            $qty = $item->getQty();
+        } catch (\Exception $e) {
+            $this->messageManager->addNotice($e->getMessage());
         }
         return $qty;
     }
